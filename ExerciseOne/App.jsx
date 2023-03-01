@@ -5,8 +5,7 @@ Date Of Submission - 23-02-23
 */
 
 
-import React from 'react';
-import type { PropsWithChildren } from 'react';
+import React, { useState } from 'react';
 import styles from "./styles"
 import {
   Text,
@@ -18,17 +17,23 @@ import {
   Button,
   Alert,
   TouchableOpacity,
+  ImageBackground,
 } from 'react-native';
 
 import {
   Colors,
 } from 'react-native/Libraries/NewAppScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+import { NavigationContainer, TabActions } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+// import 'react-native-gesture-handler';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 
-function Section({ children, title }: SectionProps): JSX.Element {
+
+
+
+function Section({ children, title }) {
   const isDarkMode = useColorScheme() === 'dark';
   return (
     <View style={styles.sectionContainer}>
@@ -54,10 +59,57 @@ function Section({ children, title }: SectionProps): JSX.Element {
   );
 }
 
-const Separator = () => <View style={styles.separator} />;
+var name = '';
+
+function HomeScreen({ route, navigation }) {
+  console.log(route.params)
+   name = route.params?.name ;
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Welcome {JSON.stringify(name)} to your </Text>
+      <Text>Home Screen</Text>
+      <Button title='Log Out' onPress={()=>navigation.navigate('Login')}></Button>
+    </View>
+  );
+}
+
+function logout(navigation) {
+  name = '' 
+  navigation.navigate('Login')
+}
 
 
-function App(): JSX.Element {
+function ProfileScreen({ navigation }) {
+
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Welcome to your</Text>
+      <Text>Profile Screen</Text>
+
+    </View>
+
+  );
+
+}
+
+
+function SettingsScreen({ navigation }) {
+
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Welcome to your</Text>
+      <Text>Settings Screen</Text>
+      <Button title='Go Back' onPress={() => navigation.navigate('Home')}></Button>
+    </View>
+
+  );
+
+}
+
+
+
+function LoginScreen({ navigation }) {
+
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = StyleSheet.create({
@@ -66,6 +118,8 @@ function App(): JSX.Element {
       flex: 1
     }
   });
+
+  const [text, setText] = useState('');
 
   return (
 
@@ -86,6 +140,8 @@ function App(): JSX.Element {
           inputMode='email'
           autoFocus={true}
           underlineColorAndroid='red'
+          onChangeText={newText => setText(newText)}
+          defaultValue={text}
         ></TextInput>
         <Text style={styles.textInputLabelStyle}>password</Text>
         <TextInput
@@ -100,7 +156,7 @@ function App(): JSX.Element {
 
       <View style={styles.buttonContainerStyle}>
         <TouchableOpacity
-          onPress={() => Alert.alert("Login Pressed")}
+          onPress={() => navigation.navigate('Drawer',{screen:'Tab',params: {screen:'Home',params:{name: text},  },})}
           style={styles.loginButtonStyle}
         >
           <Text style={styles.loginTextStyle}>
@@ -121,10 +177,10 @@ function App(): JSX.Element {
             style={styles.socialButtonStyle}
           >
 
-
             <Text style={styles.facebookTextStyle}>
               facebook
             </Text>
+
 
 
           </TouchableOpacity>
@@ -148,6 +204,51 @@ function App(): JSX.Element {
     </View >
 
   );
+
+}
+
+const Stack = createNativeStackNavigator();
+
+const Separator = () => <View style={styles.separator} />;
+const Drawer = createDrawerNavigator();
+
+
+function MyDrawer() {
+  return (
+
+<Drawer.Navigator initialRouteName="Tab">
+      <Drawer.Screen name="Tab" component={MyTab} />
+      <Drawer.Screen name="Settings" component={SettingsScreen} />
+    </Drawer.Navigator>
+
+      )
+}
+
+
+const Tab = createBottomTabNavigator();
+
+function MyTab() {
+  return(
+<Tab.Navigator initialRouteName="Home">
+    <Tab.Screen name="Home" component={HomeScreen} />
+    <Tab.Screen name="Profile" component={ProfileScreen} />
+  </Tab.Navigator>
+
+  );
+  
+}
+
+function App() {
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Drawer" component={MyDrawer} options={{headerShown: false}}  />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+
 }
 
 
